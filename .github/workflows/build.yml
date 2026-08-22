@@ -45,6 +45,11 @@ jobs:
           combine: true
           target: ${{ matrix.config.target }}
 
+                - name: List all geode-deps headers (debug)
+        if: always()
+        shell: bash
+        run: find . -path "*geode-deps*" -type f 2>/dev/null | head -200
+
       - name: List object-collab headers (debug)
         if: always()
         shell: bash
