@@ -18,6 +18,10 @@ jobs:
           - name: macOS
             os: macos-latest
 
+          - name: iOS
+            os: macos-latest
+            target: iOS
+
           - name: Android32
             os: ubuntu-latest
             target: Android32
@@ -26,10 +30,6 @@ jobs:
             os: ubuntu-latest
             target: Android64
 
-          - name: iOS
-            os: ubuntu-latest
-            target: iOS
-
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
@@ -37,6 +37,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: Install iOS SDK
+        if: matrix.config.target == 'iOS'
+        run: sudo xcodebuild -downloadPlatform iOS
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
@@ -50,26 +54,3 @@ jobs:
         with:
           name: ${{ steps.build.outputs.build-output-name }}
           path: ${{ steps.build.outputs.build-output-path }}
-
-  combine:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: build-artifacts
-
-      - name: Combine into one .geode
-        uses: geode-sdk/build-geode-mod/combine@main
-        id: combine
-        with:
-          artifacts: build-artifacts
-
-      - name: Upload combined artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ steps.combine.outputs.build-output-name }}
-          path: ${{ steps.combine.outputs.build-output-path }}
