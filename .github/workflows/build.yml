@@ -38,16 +38,17 @@ jobs:
         with:
           submodules: recursive
 
-      - name: List object-collab headers (debug)
-        shell: bash
-        run: find "$GEODE_SDK/.." -ipath "*object-collab*" -o -ipath "*geode-deps*" 2>/dev/null | head -50
-
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
         id: build
         with:
           combine: true
           target: ${{ matrix.config.target }}
+
+      - name: List object-collab headers (debug)
+        if: always()
+        shell: bash
+        run: find . -ipath "*object-collab*" 2>/dev/null
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
