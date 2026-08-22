@@ -10,7 +10,7 @@
 // against those headers (they were reconstructed from BigPortal's compiled
 // symbols, so names are right but a couple of parameter orders may drift
 // between object-collab versions).
-#include <object-collab.hpp>
+#include <smjs.object-collab/include/ObjectCollab.hpp>
 
 using namespace geode::prelude;
 
