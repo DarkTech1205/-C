@@ -1,0 +1,72 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - name: Windows
+            os: windows-latest
+          - name: macOS
+            os: macos-latest
+          - name: Android32
+            os: ubuntu-latest
+          - name: Android64
+            os: ubuntu-latest
+
+    name: ${{ matrix.config.name }}
+    runs-on: ${{ matrix.config.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      # Official Geode build action -- installs the right SDK/toolchain for
+      # each platform in the matrix and runs `geode build` for you. Also
+      # resolves mod.json dependencies (smjs.object-collab, geode.node-ids)
+      # automatically, so you don't need to vendor their headers yourself.
+      - name: Build mod
+        uses: geode-sdk/geode-build-action@main
+        id: build
+        with:
+          combine: true
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build.outputs.build-output-name }}
+          path: ${{ steps.build.outputs.build-output-path }}
+
+  # Bundles every platform's .geode output produced above into one combined
+  # cross-platform .geode file, attached as its own downloadable artifact.
+  combine:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: build-artifacts
+
+      - name: Combine into one .geode
+        uses: geode-sdk/geode-build-action/combine@main
+        id: combine
+        with:
+          artifacts: build-artifacts
+
+      - name: Upload combined artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.combine.outputs.build-output-name }}
+          path: ${{ steps.combine.outputs.build-output-path }}
