@@ -26,6 +26,10 @@ jobs:
             os: ubuntu-latest
             target: Android64
 
+          - name: iOS
+            os: ubuntu-latest
+            target: iOS
+
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
@@ -33,6 +37,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
+      - name: List object-collab headers (debug)
+        shell: bash
+        run: find "$GEODE_SDK/.." -ipath "*object-collab*" -o -ipath "*geode-deps*" 2>/dev/null | head -50
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
