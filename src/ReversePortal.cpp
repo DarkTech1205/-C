@@ -23,7 +23,7 @@ void ReversePortal::registerObject(Mod* mod) {
         .sprite("reverse-portal-icon.png"_spr)
         .construction([](ObjectInfo* info) {
             auto obj = ReversePortal::create("reverse-portal-icon.png"_spr);
-            return QuickObject(obj);
+            return ComplexObject(obj);
         })
         .build();
 
