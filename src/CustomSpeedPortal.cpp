@@ -23,8 +23,8 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
         // m_speedValue defaults to 1.0f and needs setting some other way
         // (e.g. temporarily via a mod setting, or directly in code) rather
         // than through an in-editor popup.
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return CustomSpeedPortal::create("speed-portal-icon.png"_spr);
+        .construction([](ObjectInfo* info) {
+            return QuickObject(CustomSpeedPortal::create("speed-portal-icon.png"_spr));
         })
         .build();
 
