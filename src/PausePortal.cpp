@@ -13,8 +13,9 @@ void PausePortal::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("pause-portal"_spr)
         .sprite("pause-portal-icon.png"_spr) // the "||" bars
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return PausePortal::create("pause-portal-icon.png"_spr);
+        .construction([](ObjectInfo* info) {
+            auto obj = PausePortal::create("pause-portal-icon.png"_spr);
+            return QuickObject(obj);
         })
         .build();
 
