@@ -14,9 +14,8 @@ void PurpleOrb::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("purple-orb"_spr)
         .sprite("purple-orb-icon.png"_spr) // the actual round purple orb sprite
-        .construction([](ObjectInfo* info) {
-            PurpleOrb::create("purple-orb-icon.png"_spr);
-            return QuickObject();
+        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
+            return PurpleOrb::create("purple-orb-icon.png"_spr);
         })
         .build();
 
