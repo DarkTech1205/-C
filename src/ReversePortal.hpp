@@ -20,7 +20,7 @@ using namespace geode::prelude;
 // portals already behave, just for direction.
 class ReversePortal : public object_collab::CustomObject<EffectGameObject> {
 protected:
-    bool init(object_collab::ObjectInfo* info) override;
+    bool init(const char* frame) override;
 
 public:
     // Registers the object with object-collab: editor tab, icon, colour, and

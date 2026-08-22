@@ -13,7 +13,7 @@ using namespace geode::prelude;
 // "unpause" object needed.
 class PausePortal : public object_collab::CustomObject<EffectGameObject> {
 protected:
-    bool init(object_collab::ObjectInfo* info) override;
+    bool init(const char* frame) override;
 
 public:
     static void registerObject(geode::Mod* mod);

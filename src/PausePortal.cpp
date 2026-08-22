@@ -4,8 +4,8 @@
 using namespace geode::prelude;
 using namespace object_collab;
 
-bool PausePortal::init(ObjectInfo* info) {
-    if (!CustomObject::init(info)) return false;
+bool PausePortal::init(const char* frame) {
+    if (!CustomObject::init(frame)) return false;
     return true;
 }
 
@@ -13,10 +13,8 @@ void PausePortal::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("pause-portal"_spr)
         .sprite("pause-portal-icon.png"_spr) // the "||" bars
-        .editorTab(EditorTab::Portals)
-        .editorButtonColor(EditorButtonColor::Purple)
         .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return PausePortal::create(info);
+            return PausePortal::create("pause-portal-icon.png"_spr);
         })
         .build();
 

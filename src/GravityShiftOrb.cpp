@@ -4,8 +4,8 @@
 using namespace geode::prelude;
 using namespace object_collab;
 
-bool GravityShiftOrb::init(ObjectInfo* info) {
-    if (!CustomObject::init(info)) return false;
+bool GravityShiftOrb::init(const char* frame) {
+    if (!CustomObject::init(frame)) return false;
     m_wasJumpHeldLastFrame = false;
     return true;
 }
@@ -14,10 +14,8 @@ void GravityShiftOrb::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("gravity-shift-orb"_spr)
         .sprite("gravity-shift-orb-icon.png"_spr) // TODO: use the teal ring render's actual game sprite once you export one
-        .editorTab(EditorTab::Orbs)
-        .editorButtonColor(EditorButtonColor::Teal)
         .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            auto* orb = GravityShiftOrb::create(info);
+            auto* orb = GravityShiftOrb::create("gravity-shift-orb-icon.png"_spr);
             if (orb) orb->startOscillating();
             return orb;
         })

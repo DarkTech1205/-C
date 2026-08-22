@@ -6,8 +6,8 @@
 using namespace geode::prelude;
 using namespace object_collab;
 
-bool CustomSpeedPortal::init(ObjectInfo* info) {
-    if (!CustomObject::init(info)) return false;
+bool CustomSpeedPortal::init(const char* frame) {
+    if (!CustomObject::init(frame)) return false;
     m_speedValue = 1.0f;
     m_alreadyActivated = false;
     return true;
@@ -17,25 +17,14 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("custom-speed-portal"_spr)
         .sprite("speed-portal-icon.png"_spr) // the ">" chevron
-        .editorTab(EditorTab::Portals)
-        .editorButtonColor(EditorButtonColor::Blue)
-        // Opens a small popup (object-collab's ValueMenu) when you double
-        // click the placed object, letting you type the speed number.
-        // Hue/colour is deliberately NOT here -- that's the object's normal
-        // main colour channel, edited the same way as any other object.
-        .editSpecial([](std::vector<CustomObjectInterface*> const& selected) -> std::variant<Popup*, editor_popup::PopupConfig> {
-            auto menu = editor_popup::ValueMenu::builder()
-                .title("Speed")
-                .build();
-            return editor_popup::PopupConfig::builder()
-                .title("Custom Speed Portal")
-                .menu(std::move(menu))
-                .width(200.f)
-                .height(100.f)
-                .build();
-        })
+        // TODO: re-add a speed-entry popup once the real editor_popup API
+        // is confirmed (ValueMenu::builder() doesn't exist as I wrote it --
+        // see the header dump this build should now produce). Until then,
+        // m_speedValue defaults to 1.0f and needs setting some other way
+        // (e.g. temporarily via a mod setting, or directly in code) rather
+        // than through an in-editor popup.
         .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return CustomSpeedPortal::create(info);
+            return CustomSpeedPortal::create("speed-portal-icon.png"_spr);
         })
         .build();
 
@@ -53,20 +42,20 @@ void CustomSpeedPortal::onPlayerTouch(GJBaseGameLayer* layer, PlayerObject* play
     if (m_alreadyActivated) return;
     m_alreadyActivated = true;
 
-    // The manager lives as a Geode field on GJBaseGameLayer -- see main.cpp.
-    auto* manager = layer->template getFieldOrDefault<SpeedPortalManager>("speed-portal-manager"_spr, SpeedPortalManager{});
-    manager->registerSpeed(m_speedValue);
+    // Singleton bookkeeping -- see the class comment in CustomSpeedPortal.hpp
+    // for why this isn't a real per-level Geode field.
+    SpeedPortalManager::instance().registerSpeed(m_speedValue);
 
     float timeMod = SpeedPortalManager::speedToTimeMod(m_speedValue);
     player->updateTimeMod(timeMod, isPlayer1);
 }
 
-const std::vector<CustomSpeedPortal::CurvePoint>& SpeedPortalManager::curve() {
+const std::vector<SpeedPortalManager::CurvePoint>& SpeedPortalManager::curve() {
     // Built once: raw (speed, timeMod) points from ReSpeed's about.md, then
     // Fritsch-Carlson tangents computed so the resulting cubic Hermite curve
     // is monotonic (never overshoots between two increasing points, which a
     // naive Catmull-Rom spline through these 5 unevenly-spaced points can do).
-    static const std::vector<CustomSpeedPortal::CurvePoint> pts = [] {
+    static const std::vector<SpeedPortalManager::CurvePoint> pts = [] {
         std::vector<std::pair<float, float>> raw = {
             {0.5f, 0.7f}, {1.0f, 0.9f}, {2.0f, 1.1f}, {3.0f, 1.3f}, {4.0f, 1.6f}
         };
@@ -104,7 +93,7 @@ const std::vector<CustomSpeedPortal::CurvePoint>& SpeedPortalManager::curve() {
             }
         }
 
-        std::vector<CustomSpeedPortal::CurvePoint> out;
+        std::vector<SpeedPortalManager::CurvePoint> out;
         out.reserve(n);
         for (size_t i = 0; i < n; i++) out.push_back({raw[i].first, raw[i].second, tangents[i]});
         return out;

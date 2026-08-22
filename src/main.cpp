@@ -4,7 +4,7 @@
 #include "PurpleOrb.hpp"
 #include "GravityShiftOrb.hpp"
 #include <Geode/modify/PlayerObject.hpp>
-#include <Geode/modify/GJBaseGameLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
 
 using namespace geode::prelude;
 
@@ -67,9 +67,17 @@ class $modify(MyPlayerObject, PlayerObject) {
 // Resets every custom portal's "already activated" flag on respawn, the same
 // way vanilla non-multi-activate triggers reset on checkpoint/death, so a
 // portal fires again next attempt instead of staying spent forever.
-class $modify(MyGJBaseGameLayer, GJBaseGameLayer) {
+//
+// This hooks PlayLayer::resetLevel rather than GJBaseGameLayer::resetLevel --
+// the base-class version turned out to be force-inlined in the bindings
+// (the actual compiler error: "cannot be hooked due to an inline definition
+// existing"), so it's not a valid Geode hook target at all. PlayLayer's own
+// override is one of the most commonly hooked functions across published
+// Geode mods for exactly this kind of per-attempt reset logic.
+class $modify(MyPlayLayer, PlayLayer) {
     void resetLevel() {
-        GJBaseGameLayer::resetLevel();
+        PlayLayer::resetLevel();
+        SpeedPortalManager::instance().resetForNewAttempt();
         for (auto* obj : CCArrayExt<GameObject*>(this->m_objects)) {
             if (auto* rp = typeinfo_cast<ReversePortal*>(obj)) rp->m_alreadyActivated = false;
             if (auto* sp = typeinfo_cast<CustomSpeedPortal*>(obj)) sp->m_alreadyActivated = false;

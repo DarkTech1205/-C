@@ -4,8 +4,8 @@
 using namespace geode::prelude;
 using namespace object_collab;
 
-bool PurpleOrb::init(ObjectInfo* info) {
-    if (!CustomObject::init(info)) return false;
+bool PurpleOrb::init(const char* frame) {
+    if (!CustomObject::init(frame)) return false;
     m_alreadyFired = false;
     return true;
 }
@@ -14,10 +14,8 @@ void PurpleOrb::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("purple-orb"_spr)
         .sprite("purple-orb-icon.png"_spr) // the actual round purple orb sprite
-        .editorTab(EditorTab::Orbs) // orbs get their own editor tab, not Portals
-        .editorButtonColor(EditorButtonColor::Purple)
         .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return PurpleOrb::create(info);
+            return PurpleOrb::create("purple-orb-icon.png"_spr);
         })
         .build();
 

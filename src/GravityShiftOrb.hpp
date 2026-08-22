@@ -20,7 +20,7 @@ using namespace geode::prelude;
 // numbers is a small follow-up, not a redesign.
 class GravityShiftOrb : public object_collab::CustomObject<EffectGameObject> {
 protected:
-    bool init(object_collab::ObjectInfo* info) override;
+    bool init(const char* frame) override;
 
 public:
     static void registerObject(geode::Mod* mod);

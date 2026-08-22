@@ -27,7 +27,7 @@ using namespace geode::prelude;
 
 class CustomSpeedPortal : public object_collab::CustomObject<EffectGameObject> {
 protected:
-    bool init(object_collab::ObjectInfo* info) override;
+    bool init(const char* frame) override;
 
 public:
     static void registerObject(geode::Mod* mod);
@@ -41,10 +41,24 @@ public:
     bool m_alreadyActivated = false;
 };
 
-// Per-level bookkeeping: one of these lives on the PlayLayer/LevelEditorLayer
-// (attached via a Geode field on our GJBaseGameLayer modify class in main.cpp).
+// Per-level bookkeeping. Simplified to a singleton rather than a real
+// per-level Geode field: attaching custom data to GJBaseGameLayer through
+// Geode's field system means writing our own $modify(GJBaseGameLayer) class
+// with a Fields struct (the documented, real pattern), which only the class
+// that declares Fields can read via m_fields -- not something an unrelated
+// class like this one can fetch generically. A singleton avoids guessing at
+// an API surface we're not sure exists, at the honest cost of being reset
+// explicitly on level (re)start rather than automatically scoped per-level
+// (see resetForNewAttempt(), called from the PlayLayer::resetLevel hook in
+// main.cpp) -- fine for one level played at a time, but doesn't multiplex if
+// two levels' custom speed lists needed to coexist simultaneously.
 class SpeedPortalManager {
 public:
+    static SpeedPortalManager& instance() {
+        static SpeedPortalManager s_instance;
+        return s_instance;
+    }
+
     // Converts an arbitrary speed value (e.g. 1.5, 7.3, 0.2) into the float
     // GD's PlayerObject::updateTimeMod(float p0, bool p1) expects.
     //
@@ -61,10 +75,6 @@ public:
     // curve rather than kinking at the edges.
     static float speedToTimeMod(float speed);
 
-private:
-    struct CurvePoint { float speed, timeMod, tangent; };
-    static const std::vector<CurvePoint>& curve();
-
     // Registers `speed` in this level's ordered list if it's new, returns
     // its index (position it was appended at, i.e. "which portal in the
     // list this is").
@@ -75,6 +85,15 @@ private:
     // (1.5, 2.5, ...), duplicates a small marker sprite positioned a short
     // distance in front of it along the portal's facing direction.
     void spawnMiniMarkers(GJBaseGameLayer* layer);
+
+    // Clears the discovered-speeds list. Call this when a level restarts (or
+    // a different level loads) so one level's custom speeds don't leak into
+    // another's -- see the PlayLayer::resetLevel hook in main.cpp.
+    void resetForNewAttempt() { m_orderedSpeeds.clear(); }
+
+private:
+    struct CurvePoint { float speed, timeMod, tangent; };
+    static const std::vector<CurvePoint>& curve();
 
     std::vector<float> m_orderedSpeeds; // grows as new values are discovered
 };

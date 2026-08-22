@@ -40,19 +40,39 @@ design.
   those two details). All five `.hpp` files now use the confirmed path, and
   the diagnostic block in `CMakeLists.txt` has been removed since it did
   its job.
-- **Still unverified:** the actual method names on `ObjectInfo::Builder` /
-  `ObjectTraits::Builder` / `editor_popup::ValueMenu` etc. Now that we have
-  the real header filenames (`ObjectInfo.hpp`, `ObjectTraits.hpp`,
-  `DetailsBuilder.hpp`, `EditorPopupConfig.hpp`, `Property.hpp`,
-  `ObjectIDSwap.hpp`, `CustomLevelData.hpp`, `CustomObject.hpp`) I tried
-  searching for the source publicly to confirm signatures and came up
-  empty — those headers aren't indexed anywhere I can reach. The include
-  will resolve now; expect the *next* errors (if any) to be about specific
-  method names/argument order inside those headers rather than "file not
-  found." If that happens, your editor's autocomplete once the SDK is set
-  up locally, or IntelliSense in VS Code with the Geode extension, will
-  show you the real signatures directly from the header — much faster than
-  me guessing blind from outside.
+- **Real compile errors from your next build fixed a batch of genuine bugs:**
+  - `CustomObject<T>::init` really takes `const char* frame` (inherited
+    unchanged from `EffectGameObject::init`), not `ObjectInfo*` — fixed
+    across all five objects, along with the matching `::create(...)` calls,
+    which likewise take a frame string, not the `ObjectInfo*`.
+  - `SpeedPortalManager::CurvePoint` was being referenced as
+    `CustomSpeedPortal::CurvePoint` in `CustomSpeedPortal.cpp` — a scope
+    typo of mine, nothing to do with object-collab. Fixed.
+  - `GJBaseGameLayer::resetLevel` turned out to be force-inlined in the
+    bindings and can't be hooked at all (a real compiler error, not a
+    guess) — switched the reset hook to `PlayLayer::resetLevel`, one of the
+    most commonly hooked functions for this exact purpose across published
+    Geode mods.
+  - `getFieldOrDefault` isn't a real generic method on `GJBaseGameLayer` —
+    replaced `SpeedPortalManager`'s storage with a plain singleton instead
+    of guessing at Geode's per-node field API a second time. Trade-off:
+    it resets explicitly on `PlayLayer::resetLevel` rather than being
+    automatically scoped per level object — fine for one level played at a
+    time, documented in the class comment in `CustomSpeedPortal.hpp`.
+- **Still wrong, not yet fixed:** `EditorTab::Portals`/`::Orbs`,
+  `EditorButtonColor::Blue`/`::Green`/`::Purple`/`::Teal`, and
+  `editor_popup::ValueMenu::builder()` all turned out to not exist as I'd
+  guessed them. Rather than guess a 4th time at enum member names I can't
+  see, I removed those calls entirely (objects will register with
+  whatever object-collab's own defaults are) and added a bigger diagnostic:
+  `CMakeLists.txt` now prints the full contents of `ObjectInfo.hpp`,
+  `ObjectTraits.hpp`, `EditorPopupConfig.hpp`, `DetailsBuilder.hpp`, and
+  `Property.hpp` into the configure log. Paste that back and I can fix the
+  editor tab/color/popup code with certainty instead of another guess.
+  The custom speed portal's speed-entry popup is disabled for now as part
+  of this same removal — `m_speedValue` just defaults to 1.0x until the
+  real popup API comes back in that dump.
+
 
 - **Fixed the mix-up:** your ring/dumbbell render was never the Purple Orb's
   sprite — it's the new gamemode's showcase art (renamed to

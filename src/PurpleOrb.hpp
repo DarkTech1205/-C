@@ -19,7 +19,7 @@ using namespace geode::prelude;
 // recoloured without needing a new asset.
 class PurpleOrb : public object_collab::CustomObject<EffectGameObject> {
 protected:
-    bool init(object_collab::ObjectInfo* info) override;
+    bool init(const char* frame) override;
 
 public:
     static void registerObject(geode::Mod* mod);

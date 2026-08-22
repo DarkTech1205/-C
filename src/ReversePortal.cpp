@@ -6,8 +6,8 @@
 using namespace geode::prelude;
 using namespace object_collab;
 
-bool ReversePortal::init(ObjectInfo* info) {
-    if (!CustomObject::init(info)) return false;
+bool ReversePortal::init(const char* frame) {
+    if (!CustomObject::init(frame)) return false;
     // Same flag BigPortal's "no-multi-activate" property backs -- stops the
     // portal re-triggering every single frame the player overlaps it.
     m_alreadyActivated = false;
@@ -21,10 +21,8 @@ void ReversePortal::registerObject(Mod* mod) {
         // reads great as a big promo image but is too busy at editor-icon
         // size — worth swapping for a purpose-drawn small icon later.
         .sprite("reverse-portal-icon.png"_spr)
-        .editorTab(EditorTab::Portals)
-        .editorButtonColor(EditorButtonColor::Green)
         .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return ReversePortal::create(info);
+            return ReversePortal::create("reverse-portal-icon.png"_spr);
         })
         .build();
 
