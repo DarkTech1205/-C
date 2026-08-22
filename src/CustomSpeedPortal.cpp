@@ -24,8 +24,8 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
         // (e.g. temporarily via a mod setting, or directly in code) rather
         // than through an in-editor popup.
         .construction([](ObjectInfo* info) {
-            auto obj = CustomSpeedPortal::create("speed-portal-icon.png"_spr);
-            return ComplexObject(obj);
+            CustomSpeedPortal::create("speed-portal-icon.png"_spr);
+            return QuickObject();
         })
         .build();
 

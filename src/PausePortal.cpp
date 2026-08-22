@@ -14,8 +14,8 @@ void PausePortal::registerObject(Mod* mod) {
         .id("pause-portal"_spr)
         .sprite("pause-portal-icon.png"_spr) // the "||" bars
         .construction([](ObjectInfo* info) {
-            auto obj = PausePortal::create("pause-portal-icon.png"_spr);
-            return ComplexObject(obj);
+            PausePortal::create("pause-portal-icon.png"_spr);
+            return QuickObject();
         })
         .build();
 
