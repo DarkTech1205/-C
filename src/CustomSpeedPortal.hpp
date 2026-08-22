@@ -1,7 +1,7 @@
 #pragma once
 #include <Geode/Geode.hpp>
 #include <Geode/binding/EffectGameObject.hpp>
-#include <object-collab.hpp>
+#include <smjs.object-collab/include/ObjectCollab.hpp>
 #include <vector>
 
 using namespace geode::prelude;
