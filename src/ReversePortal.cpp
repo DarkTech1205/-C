@@ -22,8 +22,8 @@ void ReversePortal::registerObject(Mod* mod) {
         // size — worth swapping for a purpose-drawn small icon later.
         .sprite("reverse-portal-icon.png"_spr)
         .construction([](ObjectInfo* info) {
-            ReversePortal::create("reverse-portal-icon.png"_spr);
-            return QuickObject();
+            auto obj = ReversePortal::create("reverse-portal-icon.png"_spr);
+            return ComplexObject(obj);
         })
         .build();
 
