@@ -21,8 +21,9 @@ void ReversePortal::registerObject(Mod* mod) {
         // reads great as a big promo image but is too busy at editor-icon
         // size — worth swapping for a purpose-drawn small icon later.
         .sprite("reverse-portal-icon.png"_spr)
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return ReversePortal::create("reverse-portal-icon.png"_spr);
+        .construction([](ObjectInfo* info) {
+            auto obj = ReversePortal::create("reverse-portal-icon.png"_spr);
+            return QuickObject(obj);
         })
         .build();
 
@@ -51,7 +52,6 @@ void ReversePortal::onPlayerTouch(GJBaseGameLayer* layer, PlayerObject* player) 
     constexpr int kReverseTriggerObjectID = 1917;
 
     auto trigger = EffectGameObject::createWithKey(kReverseTriggerObjectID);
-    trigger->m_notActive = false;
-    trigger->triggerObject(layer, /*p1*/ std::nullopt, /*p2*/ nullptr);
+    trigger->triggerObject(layer, 0, nullptr);
     trigger->release();
 }
