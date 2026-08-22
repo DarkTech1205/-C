@@ -1,10 +1,9 @@
-name: Build Geode Mod
+name: Build
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - "**"
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,46 +13,31 @@ jobs:
         config:
           - name: Windows
             os: windows-latest
-
           - name: macOS
             os: macos-latest
-
           - name: Android32
             os: ubuntu-latest
-            target: Android32
-
           - name: Android64
             os: ubuntu-latest
-            target: Android64
-
-          - name: iOS
-            os: ubuntu-latest
-            target: iOS
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Build the mod
-        uses: geode-sdk/build-geode-mod@main
+      # Official Geode build action -- installs the right SDK/toolchain for
+      # each platform in the matrix and runs `geode build` for you. Also
+      # resolves mod.json dependencies (smjs.object-collab, geode.node-ids)
+      # automatically, so you don't need to vendor their headers yourself.
+      - name: Build mod
+        uses: geode-sdk/geode-build-action@main
         id: build
         with:
           combine: true
-          target: ${{ matrix.config.target }}
-
-                - name: List all geode-deps headers (debug)
-        if: always()
-        shell: bash
-        run: find . -path "*geode-deps*" -type f 2>/dev/null | head -200
-
-      - name: List object-collab headers (debug)
-        if: always()
-        shell: bash
-        run: find . -ipath "*object-collab*" 2>/dev/null
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -61,11 +45,14 @@ jobs:
           name: ${{ steps.build.outputs.build-output-name }}
           path: ${{ steps.build.outputs.build-output-path }}
 
+  # Bundles every platform's .geode output produced above into one combined
+  # cross-platform .geode file, attached as its own downloadable artifact.
   combine:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -73,7 +60,7 @@ jobs:
           path: build-artifacts
 
       - name: Combine into one .geode
-        uses: geode-sdk/build-geode-mod/combine@main
+        uses: geode-sdk/geode-build-action/combine@main
         id: combine
         with:
           artifacts: build-artifacts
