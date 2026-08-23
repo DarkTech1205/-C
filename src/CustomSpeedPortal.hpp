@@ -33,8 +33,8 @@ public:
     // See ReversePortal.hpp for why this create() override is required
     // (the inherited EffectGameObject::create would allocate the wrong
     // type -- confirmed by a compiler error, not a guess).
-    static CustomSpeedPortal* create(const char* frame) {
-        auto* ret = new CustomSpeedPortal();
+    static CustomSpeedPortal* create(object_collab::ObjectInfo* info, const char* frame) {
+        auto* ret = new CustomSpeedPortal(info);
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -42,6 +42,9 @@ public:
         delete ret;
         return nullptr;
     }
+
+    explicit CustomSpeedPortal(object_collab::ObjectInfo* info)
+        : object_collab::CustomObject<EffectGameObject>(info) {}
 
     static void registerObject(geode::Mod* mod);
 
