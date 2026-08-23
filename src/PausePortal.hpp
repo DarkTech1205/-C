@@ -17,8 +17,8 @@ protected:
 
 public:
     // See ReversePortal.hpp for why this create() override is required.
-    static PausePortal* create(const char* frame) {
-        auto* ret = new PausePortal();
+    static PausePortal* create(object_collab::ObjectInfo* info, const char* frame) {
+        auto* ret = new PausePortal(info);
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -26,6 +26,9 @@ public:
         delete ret;
         return nullptr;
     }
+
+    explicit PausePortal(object_collab::ObjectInfo* info)
+        : object_collab::CustomObject<EffectGameObject>(info) {}
 
     static void registerObject(geode::Mod* mod);
 
