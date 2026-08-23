@@ -23,8 +23,8 @@ protected:
 
 public:
     // See ReversePortal.hpp for why this create() override is required.
-    static PurpleOrb* create(const char* frame) {
-        auto* ret = new PurpleOrb();
+    static PurpleOrb* create(object_collab::ObjectInfo* info, const char* frame) {
+        auto* ret = new PurpleOrb(info);
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -32,6 +32,9 @@ public:
         delete ret;
         return nullptr;
     }
+
+    explicit PurpleOrb(object_collab::ObjectInfo* info)
+        : object_collab::CustomObject<EffectGameObject>(info) {}
 
     static void registerObject(geode::Mod* mod);
 
