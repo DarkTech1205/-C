@@ -35,15 +35,18 @@ void ReversePortal::collidedByPlayer(PlayerObject* player) {
     if (m_alreadyActivated) return;
     m_alreadyActivated = true;
 
-    auto* layer = GJBaseGameLayer::get();
-    if (!layer) return;
-
-    // Spin up a real, vanilla Reverse trigger and fire its own activation
-    // function rather than hand-rolling the direction-flip ourselves.
-    // TODO: confirm the real Reverse trigger's object ID for GD 2.2081.
-    constexpr int kReverseTriggerObjectID = 1917;
-
-    auto* trigger = EffectGameObject::createWithKey(kReverseTriggerObjectID);
-    trigger->triggerObject(layer, 0, nullptr);
-    trigger->release();
+    // doReversePlayer(bool reverse) is a real, confirmed PlayerObject
+    // method (Geode's own PlayerObject docs) -- much more solid than the
+    // earlier approach of spinning up a fake Reverse trigger with a
+    // guessed object ID, and now removed entirely.
+    //
+    // Known limitation: this toggles based on this *portal's own* last
+    // state, not the player's true current reverse status (no confirmed
+    // public "am I currently reversed" getter was found) -- so if a
+    // vanilla Reverse trigger elsewhere in the level also changes reverse
+    // state, this portal's toggle could drift out of sync with it. Fine
+    // for levels that only use these portals for reverse, worth revisiting
+    // if mixing with vanilla reverse triggers turns out to matter.
+    m_currentlyReversed = !m_currentlyReversed;
+    player->doReversePlayer(m_currentlyReversed);
 }

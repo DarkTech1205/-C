@@ -29,18 +29,16 @@ void PurpleOrb::registerObject(Mod* mod) {
 void PurpleOrb::tryActivate(PlayerObject* player) {
     if (m_alreadyFired) return;
 
-    // TODO verify real accessor -- placeholder name based on how other GD
-    // orb-touch mods commonly refer to it. If this doesn't compile, search
-    // the bindings for PlayerObject's jump-button-held state (something
-    // Geode's bindings expose as a bool member or a small accessor).
-    bool jumpHeld = player->m_isJumpButtonPressed;
+    // Confirmed real method (Geode's own PlayerObject docs): bool
+    // buttonDown(PlayerButton button) -- replaces the earlier guessed bool
+    // member, which didn't exist.
+    bool jumpHeld = player->buttonDown(PlayerButton::Jump);
     if (!jumpHeld) return;
 
     m_alreadyFired = true;
 
-    // Vanilla red orb's jump call -- TODO verify real name/signature. Most
-    // GD orb-hook mods call something along these lines; if the symbol
-    // differs, grep the bindings for "redJump" / "Orb" in PlayerObject.
-    constexpr float kRedOrbBaseVelocity = 19.0f; // approximate, unverified
+    // boostPlayer(float yVelocity) is a real, confirmed PlayerObject method
+    // -- this call was already correct.
+    constexpr float kRedOrbBaseVelocity = 19.0f; // approximate, still unverified
     player->boostPlayer(kRedOrbBaseVelocity * kStrengthMultiplier);
 }

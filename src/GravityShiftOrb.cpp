@@ -46,20 +46,22 @@ void GravityShiftOrb::startOscillating() {
 }
 
 void GravityShiftOrb::tryActivate(PlayerObject* player) {
-    // TODO verify: same unverified accessor as PurpleOrb.cpp for "is jump
-    // currently held" -- fix both call sites together once confirmed.
-    bool jumpHeldNow = player->m_isJumpButtonPressed;
+    // buttonDown(PlayerButton) is a real confirmed PlayerObject method --
+    // replaces the earlier guessed bool member (shared fix with PurpleOrb.cpp).
+    bool jumpHeldNow = player->buttonDown(PlayerButton::Jump);
     bool freshPress = jumpHeldNow && !m_wasJumpHeldLastFrame;
     m_wasJumpHeldLastFrame = jumpHeldNow;
 
     if (!freshPress) return;
 
     // Teleport first, then flip gravity, so the flip applies from the
-    // orb's position rather than wherever the player was an instant before
-    // (matters for how the post-flip velocity reads to the player).
-    // TODO verify both real symbol names -- placeholders based on common
-    // GD/Geode mod naming for portal-style teleport and gravity toggle;
-    // confirm against the bindings once object-collab's include is sorted.
-    player->teleportToVertical(this->getPosition(), false);
-    player->toggleGravityEffect(!player->m_isUpsideDown, true);
+    // orb's position rather than wherever the player was an instant before.
+    // Real confirmed methods (Geode's PlayerObject docs): there's no
+    // teleportToVertical -- setPosition (already public/virtual on
+    // PlayerObject) plus the real playerTeleported() bookkeeping call is
+    // the actual pattern portals use. flipGravity(bool flip, bool
+    // noEffects) is real and replaces the guessed toggleGravityEffect.
+    player->setPosition(this->getPosition());
+    player->playerTeleported();
+    player->flipGravity(!player->m_isUpsideDown, true);
 }

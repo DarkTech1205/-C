@@ -50,4 +50,9 @@ public:
     void collidedByPlayer(PlayerObject* player) override;
 
     bool m_alreadyActivated = false; // backs the "no-multi-activate" property
+
+private:
+    // Own local toggle state -- see the note in ReversePortal.cpp on why
+    // this doesn't read the player's true current reverse state.
+    bool m_currentlyReversed = false;
 };
