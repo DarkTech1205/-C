@@ -34,7 +34,8 @@ public:
     // (the inherited EffectGameObject::create would allocate the wrong
     // type -- confirmed by a compiler error, not a guess).
     static CustomSpeedPortal* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto* ret = new CustomSpeedPortal(info);
+        auto traits = object_collab::ObjectTraits();
+        auto* ret = new CustomSpeedPortal(info, std::move(traits));
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -43,8 +44,8 @@ public:
         return nullptr;
     }
 
-    explicit CustomSpeedPortal(object_collab::ObjectInfo* info)
-        : object_collab::CustomObject<EffectGameObject>(info) {}
+    explicit CustomSpeedPortal(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
+        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
 
     static void registerObject(geode::Mod* mod);
 
