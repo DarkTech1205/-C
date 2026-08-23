@@ -29,10 +29,10 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
                 .id("speed"_spr)
                 .title("Speed")
                 .onValue([](float value, const Selected& sel, geode::Popup*) {
-                    applyValueToSelected(sel, &CustomSpeedPortal::m_speedValue, value);
+                    editor_popup::applyValueToSelected(sel, &CustomSpeedPortal::m_speedValue, value);
                 })
                 .currentValue([](const Selected& sel, geode::Popup*) -> float {
-                    return getCommonValueOrDefault(sel, &CustomSpeedPortal::m_speedValue);
+                    return editor_popup::getCommonValueOrDefault(sel, &CustomSpeedPortal::m_speedValue);
                 })
                 .placeholder("Speed")
                 .inputType(editor_popup::NumericMenu::InputType::TextBox)
@@ -50,7 +50,7 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
         })
         .construction(ComplexObject::builder()
             .factory([](ObjectInfo* info) -> CustomObjectInterface* {
-                return CustomSpeedPortal::create("speed-portal-icon.png"_spr);
+                return CustomSpeedPortal::create(info, "speed-portal-icon.png"_spr);
             })
             .build())
         .build();
