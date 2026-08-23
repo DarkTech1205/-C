@@ -23,6 +23,17 @@ protected:
     bool init(const char* frame) override;
 
 public:
+    // See ReversePortal.hpp for why this create() override is required.
+    static GravityShiftOrb* create(const char* frame) {
+        auto* ret = new GravityShiftOrb();
+        if (ret->init(frame)) {
+            ret->autorelease();
+            return ret;
+        }
+        delete ret;
+        return nullptr;
+    }
+
     static void registerObject(geode::Mod* mod);
 
     // Starts the orb's own up/down drift. Called once when the object is

@@ -23,6 +23,24 @@ protected:
     bool init(const char* frame) override;
 
 public:
+    // Static factory methods aren't virtual in C++, so the inherited
+    // EffectGameObject::create(frame) would allocate a plain EffectGameObject,
+    // never a ReversePortal -- confirmed by a compiler error ("cannot
+    // initialize CustomObjectInterface* with EffectGameObject*"), not a
+    // guess. This is the standard cocos2d-x create() pattern (the same shape
+    // as the CREATE_FUNC macro, just parameterized): declaring our own
+    // create() here hides the inherited one and actually allocates the
+    // right type.
+    static ReversePortal* create(const char* frame) {
+        auto* ret = new ReversePortal();
+        if (ret->init(frame)) {
+            ret->autorelease();
+            return ret;
+        }
+        delete ret;
+        return nullptr;
+    }
+
     // Registers the object with object-collab: editor tab, icon, colour, and
     // marks it as a trigger-style object so it gets touch collision instead
     // of a hitbox the player collides with physically.

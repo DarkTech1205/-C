@@ -13,17 +13,15 @@ void PausePortal::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("pause-portal"_spr)
         .sprite("pause-portal-icon.png"_spr) // the "||" bars
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return PausePortal::create("pause-portal-icon.png"_spr);
-        })
+        .editorTab(EditorTab::PlayerModifiers)
+        .editorButtonColor(EditorButtonColor::DarkGray)
+        .construction(ComplexObject::builder()
+            .factory([](ObjectInfo* info) -> CustomObjectInterface* {
+                return PausePortal::create("pause-portal-icon.png"_spr);
+            })
+            .build())
         .build();
 
-    auto traits = ObjectTraits::builder()
-        .gameObjectType(GameObjectType::Solid)
-        .defaultZLayer(ZLayer::B4)
-        .build();
-
-    info.setTraits(traits);
     ObjectAPI::registerObject(info, mod);
 }
 

@@ -33,45 +33,56 @@ design.
 
 ## v1.2 changelog
 
-- **The include is fixed for real.** Your `geode-deps` diagnostic log gave
-  the actual answer: the header is
-  `smjs.object-collab/include/object_collab.hpp` (underscore, not hyphen,
-  and nested under `include/` — my three earlier guesses all missed one of
-  those two details). All five `.hpp` files now use the confirmed path, and
-  the diagnostic block in `CMakeLists.txt` has been removed since it did
-  its job.
-- **Real compile errors from your next build fixed a batch of genuine bugs:**
-  - `CustomObject<T>::init` really takes `const char* frame` (inherited
-    unchanged from `EffectGameObject::init`), not `ObjectInfo*` — fixed
-    across all five objects, along with the matching `::create(...)` calls,
-    which likewise take a frame string, not the `ObjectInfo*`.
-  - `SpeedPortalManager::CurvePoint` was being referenced as
-    `CustomSpeedPortal::CurvePoint` in `CustomSpeedPortal.cpp` — a scope
-    typo of mine, nothing to do with object-collab. Fixed.
-  - `GJBaseGameLayer::resetLevel` turned out to be force-inlined in the
-    bindings and can't be hooked at all (a real compiler error, not a
-    guess) — switched the reset hook to `PlayLayer::resetLevel`, one of the
-    most commonly hooked functions for this exact purpose across published
-    Geode mods.
-  - `getFieldOrDefault` isn't a real generic method on `GJBaseGameLayer` —
-    replaced `SpeedPortalManager`'s storage with a plain singleton instead
-    of guessing at Geode's per-node field API a second time. Trade-off:
-    it resets explicitly on `PlayLayer::resetLevel` rather than being
-    automatically scoped per level object — fine for one level played at a
-    time, documented in the class comment in `CustomSpeedPortal.hpp`.
-- **Still wrong, not yet fixed:** `EditorTab::Portals`/`::Orbs`,
-  `EditorButtonColor::Blue`/`::Green`/`::Purple`/`::Teal`, and
-  `editor_popup::ValueMenu::builder()` all turned out to not exist as I'd
-  guessed them. Rather than guess a 4th time at enum member names I can't
-  see, I removed those calls entirely (objects will register with
-  whatever object-collab's own defaults are) and added a bigger diagnostic:
-  `CMakeLists.txt` now prints the full contents of `ObjectInfo.hpp`,
-  `ObjectTraits.hpp`, `EditorPopupConfig.hpp`, `DetailsBuilder.hpp`, and
-  `Property.hpp` into the configure log. Paste that back and I can fix the
-  editor tab/color/popup code with certainty instead of another guess.
-  The custom speed portal's speed-entry popup is disabled for now as part
-  of this same removal — `m_speedValue` just defaults to 1.0x until the
-  real popup API comes back in that dump.
+- **The include is fixed for real.** Header is
+  `smjs.object-collab/include/object_collab.hpp` (underscore, nested under
+  `include/`).
+- **Your two build logs since gave us the FULL real contents of
+  `ObjectInfo.hpp`, `ObjectTraits.hpp`, `EditorPopupConfig.hpp`,
+  `DetailsBuilder.hpp`, and `Property.hpp`.** That resolved several things
+  with certainty instead of guessing:
+  - **The real bug wasn't just a wrong enum — `create()` itself couldn't
+    have worked as written.** Static factory methods aren't virtual in
+    C++, so the inherited `EffectGameObject::create(frame)` would have
+    allocated a plain `EffectGameObject`, never our subclass — confirmed by
+    the compiler ("cannot initialize `CustomObjectInterface*` with
+    `EffectGameObject*`"). Every object now declares its own `create()`
+    (the standard cocos2d-x factory pattern, same shape as the `CREATE_FUNC`
+    macro) which hides the inherited one and actually allocates the right
+    type.
+  - `.construction(...)` needs a real `ObjectConstruction`
+    (`variant<QuickObject, ComplexObject>`), not a raw lambda — fixed by
+    wrapping every factory in `ComplexObject::builder().factory(...).build()`.
+  - `EditorTab` and `EditorButtonColor`'s real members are now confirmed:
+    `EditorTab` has no dedicated Portals/Orbs entry (real list: None,
+    Solids, TransparentSolids, Slopes, Hazards, ThreeDimensionals,
+    **PlayerModifiers**, Animated, Pixels, Collectables, Particles,
+    Decorations, Saws, Triggers) — `PlayerModifiers` is the closest
+    conceptual fit and is what all five objects use now.
+    `EditorButtonColor`'s real values are Green/Aqua/Pink/LightGray/
+    DarkGray/Red — colors reassigned across all five objects accordingly.
+  - The custom speed portal's popup is properly restored using the
+    confirmed real API: `editor_popup::NumericMenu` for the number field,
+    wrapped in `PopupConfig`, using the real `applyValueToSelected`/
+    `getCommonValueOrDefault` free functions object-collab provides
+    specifically for this member-pointer pattern.
+  - `GameObject::triggerObject`'s real signature is confirmed
+    (`(GJBaseGameLayer*, int uniqueID, gd::vector<int> const*)`) — fixed
+    the Reverse trigger call. `m_notActive` isn't a real member — removed.
+- **Still genuinely unresolved:** `ObjectTraits` is a real class (confirmed,
+  full method list known — `isSpeedObject`, `defaultZLayer`, etc.) but
+  `ObjectInfo::Builder`'s confirmed method list (`id`/`sprite`/
+  `construction`/`editorTab`/`editorButtonColor`/`editObject`/
+  `editSpecial`/`build`) has no method to attach one. Where it actually
+  plugs in is presumably `CustomObject.hpp`, which hasn't been dumped yet.
+  Removed rather than guess a where-does-this-go 4th time — our own
+  hand-rolled touch detection in `main.cpp` doesn't depend on it either
+  way, so this only matters for things like `isSpeedObject`'s native
+  integration, not for basic functionality.
+  `CMakeLists.txt`'s diagnostic now targets `CustomObject.hpp`,
+  `ObjectAPI.hpp`, `ObjectIDSwap.hpp`, `CustomLevelData.hpp`, and
+  `object_collab.hpp` next — paste that dump back if you want traits wired
+  up properly, though the mod should compile and run without it.
+
 
 
 - **Fixed the mix-up:** your ring/dumbbell render was never the Purple Orb's

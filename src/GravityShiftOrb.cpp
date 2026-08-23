@@ -14,19 +14,17 @@ void GravityShiftOrb::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("gravity-shift-orb"_spr)
         .sprite("gravity-shift-orb-icon.png"_spr) // TODO: use the teal ring render's actual game sprite once you export one
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            auto* orb = GravityShiftOrb::create("gravity-shift-orb-icon.png"_spr);
-            if (orb) orb->startOscillating();
-            return orb;
-        })
+        .editorTab(EditorTab::PlayerModifiers)
+        .editorButtonColor(EditorButtonColor::Aqua)
+        .construction(ComplexObject::builder()
+            .factory([](ObjectInfo* info) -> CustomObjectInterface* {
+                auto* orb = GravityShiftOrb::create("gravity-shift-orb-icon.png"_spr);
+                if (orb) orb->startOscillating();
+                return orb;
+            })
+            .build())
         .build();
 
-    auto traits = ObjectTraits::builder()
-        .gameObjectType(GameObjectType::Solid)
-        .defaultZLayer(ZLayer::B4)
-        .build();
-
-    info.setTraits(traits);
     ObjectAPI::registerObject(info, mod);
 }
 

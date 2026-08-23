@@ -14,17 +14,15 @@ void PurpleOrb::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("purple-orb"_spr)
         .sprite("purple-orb-icon.png"_spr) // the actual round purple orb sprite
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return PurpleOrb::create("purple-orb-icon.png"_spr);
-        })
+        .editorTab(EditorTab::PlayerModifiers)
+        .editorButtonColor(EditorButtonColor::Pink)
+        .construction(ComplexObject::builder()
+            .factory([](ObjectInfo* info) -> CustomObjectInterface* {
+                return PurpleOrb::create("purple-orb-icon.png"_spr);
+            })
+            .build())
         .build();
 
-    auto traits = ObjectTraits::builder()
-        .gameObjectType(GameObjectType::Solid)
-        .defaultZLayer(ZLayer::B4)
-        .build();
-
-    info.setTraits(traits);
     ObjectAPI::registerObject(info, mod);
 }
 

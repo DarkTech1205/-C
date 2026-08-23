@@ -32,11 +32,11 @@ setup_geode_mod(${PROJECT_NAME})
 # is confirmed and the code above is using it directly.
 set(OC_INCLUDE_DIR "${CMAKE_BINARY_DIR}/geode-deps/smjs.object-collab/include")
 set(OC_HEADERS_TO_DUMP
-    ObjectInfo.hpp
-    ObjectTraits.hpp
-    EditorPopupConfig.hpp
-    DetailsBuilder.hpp
-    Property.hpp
+    CustomObject.hpp
+    ObjectAPI.hpp
+    ObjectIDSwap.hpp
+    CustomLevelData.hpp
+    object_collab.hpp
 )
 foreach(hdr ${OC_HEADERS_TO_DUMP})
     set(hdr_path "${OC_INCLUDE_DIR}/${hdr}")

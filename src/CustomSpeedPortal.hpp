@@ -30,6 +30,19 @@ protected:
     bool init(const char* frame) override;
 
 public:
+    // See ReversePortal.hpp for why this create() override is required
+    // (the inherited EffectGameObject::create would allocate the wrong
+    // type -- confirmed by a compiler error, not a guess).
+    static CustomSpeedPortal* create(const char* frame) {
+        auto* ret = new CustomSpeedPortal();
+        if (ret->init(frame)) {
+            ret->autorelease();
+            return ret;
+        }
+        delete ret;
+        return nullptr;
+    }
+
     static void registerObject(geode::Mod* mod);
 
     void onPlayerTouch(GJBaseGameLayer* layer, PlayerObject* player, bool isPlayer1);

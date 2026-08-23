@@ -17,24 +17,49 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
     auto info = ObjectInfo::builder()
         .id("custom-speed-portal"_spr)
         .sprite("speed-portal-icon.png"_spr) // the ">" chevron
-        // TODO: re-add a speed-entry popup once the real editor_popup API
-        // is confirmed (ValueMenu::builder() doesn't exist as I wrote it --
-        // see the header dump this build should now produce). Until then,
-        // m_speedValue defaults to 1.0f and needs setting some other way
-        // (e.g. temporarily via a mod setting, or directly in code) rather
-        // than through an in-editor popup.
-        .construction([](ObjectInfo* info) -> CustomObjectInterface* {
-            return CustomSpeedPortal::create("speed-portal-icon.png"_spr);
+        .editorTab(EditorTab::PlayerModifiers) // confirmed enum, closest fit -- see ReversePortal.cpp
+        .editorButtonColor(EditorButtonColor::Aqua) // confirmed real values: Green/Aqua/Pink/LightGray/DarkGray/Red
+        // Now using the CONFIRMED real popup API from the full
+        // EditorPopupConfig.hpp dump: NumericMenu is exactly the "type a
+        // number" field we wanted, and applyValueToSelected/
+        // getCommonValueOrDefault are real free functions built for exactly
+        // this pointer-to-member pattern.
+        .editSpecial([](Selected const& selected) -> PopupOptions {
+            auto menu = editor_popup::NumericMenu::builder()
+                .id("speed"_spr)
+                .title("Speed")
+                .onValue([](float value, const Selected& sel, geode::Popup*) {
+                    applyValueToSelected(sel, &CustomSpeedPortal::m_speedValue, value);
+                })
+                .currentValue([](const Selected& sel, geode::Popup*) -> float {
+                    return getCommonValueOrDefault(sel, &CustomSpeedPortal::m_speedValue);
+                })
+                .placeholder("Speed")
+                .inputType(editor_popup::NumericMenu::InputType::TextBox)
+                .precision(2)
+                .stepSize(0.1f)
+                .min(0.1f)
+                .max(std::nullopt)
+                .build();
+            return editor_popup::PopupConfig::builder()
+                .title("Custom Speed Portal")
+                .menu(std::move(menu))
+                .width(200.f)
+                .height(150.f)
+                .build();
         })
+        .construction(ComplexObject::builder()
+            .factory([](ObjectInfo* info) -> CustomObjectInterface* {
+                return CustomSpeedPortal::create("speed-portal-icon.png"_spr);
+            })
+            .build())
         .build();
 
-    auto traits = ObjectTraits::builder()
-        .gameObjectType(GameObjectType::Solid)
-        .isSpeedObject(true) // tells object-collab this behaves like a speed portal
-        .defaultZLayer(ZLayer::B4)
-        .build();
+    // NOTE: ObjectTraits (isSpeedObject etc.) has no confirmed attachment
+    // point on ObjectInfo::Builder -- see ReversePortal.cpp's note. Removed
+    // rather than another wrong guess; our own touch detection in main.cpp
+    // doesn't need it.
 
-    info.setTraits(traits);
     ObjectAPI::registerObject(info, mod);
 }
 

@@ -16,6 +16,17 @@ protected:
     bool init(const char* frame) override;
 
 public:
+    // See ReversePortal.hpp for why this create() override is required.
+    static PausePortal* create(const char* frame) {
+        auto* ret = new PausePortal();
+        if (ret->init(frame)) {
+            ret->autorelease();
+            return ret;
+        }
+        delete ret;
+        return nullptr;
+    }
+
     static void registerObject(geode::Mod* mod);
 
     // Called every frame the player's rect overlaps this object (NOT a
