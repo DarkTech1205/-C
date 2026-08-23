@@ -28,7 +28,8 @@ public:
     // implementation does not provide a default-constructible base, so the
     // derived class must forward the ObjectInfo into the base constructor.
     static ReversePortal* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto* ret = new ReversePortal(info);
+        auto traits = object_collab::ObjectTraits();
+        auto* ret = new ReversePortal(info, std::move(traits));
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -37,8 +38,8 @@ public:
         return nullptr;
     }
 
-    explicit ReversePortal(object_collab::ObjectInfo* info)
-        : object_collab::CustomObject<EffectGameObject>(info) {}
+    explicit ReversePortal(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
+        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
 
     // Registers the object with object-collab: editor tab, icon, colour, and
     // marks it as a trigger-style object so it gets touch collision instead
