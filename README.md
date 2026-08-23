@@ -33,6 +33,18 @@ design.
 
 ## v1.2 changelog
 
+- **Build workflow fixed against the real official example.** I'd guessed
+  at `build-geode-mod`'s output names (`build-output-name`/
+  `build-output-path`, and a `combine` job that downloads per-platform
+  artifacts manually) — none of that matched the real action. Found
+  geode-sdk's own `examples/multi-platform.yml` and copied its structure
+  exactly: the `build` job doesn't upload anything itself, and a separate
+  `package` job runs `geode-sdk/build-geode-mod/combine@main` alone (no
+  manual artifact download needed — it handles gathering the per-platform
+  builds itself) with a single `build-output` output. `.github/workflows/
+  build.yml` now matches that real template, with just the iOS SDK install
+  step kept from earlier troubleshooting.
+
 - **All five objects now compile successfully** per your last build log —
   `ReversePortal.cpp`, `CustomSpeedPortal.cpp`, `PausePortal.cpp`, and
   `main.cpp` built clean. The only remaining errors were the three symbols
