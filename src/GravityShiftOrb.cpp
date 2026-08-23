@@ -18,14 +18,14 @@ void GravityShiftOrb::registerObject(Mod* mod) {
         .editorButtonColor(EditorButtonColor::Aqua)
         .construction(ComplexObject::builder()
             .factory([](ObjectInfo* info) -> CustomObjectInterface* {
-                auto* orb = GravityShiftOrb::create("gravity-shift-orb-icon.png"_spr);
+                auto* orb = GravityShiftOrb::create(info, "gravity-shift-orb-icon.png"_spr);
                 if (orb) orb->startOscillating();
                 return orb;
             })
             .build())
         .build();
 
-    ObjectAPI::registerObject(info, mod);
+    ObjectAPI::registerObject(std::move(info), mod);
 }
 
 void GravityShiftOrb::startOscillating() {

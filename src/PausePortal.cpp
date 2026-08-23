@@ -17,12 +17,12 @@ void PausePortal::registerObject(Mod* mod) {
         .editorButtonColor(EditorButtonColor::DarkGray)
         .construction(ComplexObject::builder()
             .factory([](ObjectInfo* info) -> CustomObjectInterface* {
-                return PausePortal::create("pause-portal-icon.png"_spr);
+                return PausePortal::create(info, "pause-portal-icon.png"_spr);
             })
             .build())
         .build();
 
-    ObjectAPI::registerObject(info, mod);
+    ObjectAPI::registerObject(std::move(info), mod);
 }
 
 void PausePortal::holdPlayer(PlayerObject* player) {

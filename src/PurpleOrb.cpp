@@ -18,12 +18,12 @@ void PurpleOrb::registerObject(Mod* mod) {
         .editorButtonColor(EditorButtonColor::Pink)
         .construction(ComplexObject::builder()
             .factory([](ObjectInfo* info) -> CustomObjectInterface* {
-                return PurpleOrb::create("purple-orb-icon.png"_spr);
+                return PurpleOrb::create(info, "purple-orb-icon.png"_spr);
             })
             .build())
         .build();
 
-    ObjectAPI::registerObject(info, mod);
+    ObjectAPI::registerObject(std::move(info), mod);
 }
 
 void PurpleOrb::tryActivate(PlayerObject* player) {

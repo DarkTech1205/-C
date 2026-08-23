@@ -26,16 +26,17 @@ using namespace geode::prelude;
 //   cosmetic step -- see SpeedPortalManager::spawnMiniMarkers.
 
 class CustomSpeedPortal : public object_collab::CustomObject<EffectGameObject> {
+public:
+    using CustomObject::CustomObject; // see ReversePortal.hpp for why
+
 protected:
     bool init(const char* frame) override;
 
 public:
-    // See ReversePortal.hpp for why this create() override is required
-    // (the inherited EffectGameObject::create would allocate the wrong
-    // type -- confirmed by a compiler error, not a guess).
     static CustomSpeedPortal* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto traits = object_collab::ObjectTraits();
-        auto* ret = new CustomSpeedPortal(info, std::move(traits));
+        auto* ret = new CustomSpeedPortal(info, object_collab::ObjectTraits::builder()
+            .isSpeedObject(true) // confirmed real method; upstream doc notes it's currently a no-op due to inlining, but harmless/forward-compatible to set
+            .build());
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -44,12 +45,9 @@ public:
         return nullptr;
     }
 
-    explicit CustomSpeedPortal(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
-        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
-
     static void registerObject(geode::Mod* mod);
 
-    void onPlayerTouch(GJBaseGameLayer* layer, PlayerObject* player, bool isPlayer1);
+    void collidedByPlayer(PlayerObject* player) override;
 
     float getSpeedValue() const { return m_speedValue; }
     void setSpeedValue(float v) { m_speedValue = v; }

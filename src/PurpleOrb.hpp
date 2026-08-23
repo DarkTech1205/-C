@@ -18,14 +18,15 @@ using namespace geode::prelude;
 // speed portal's is, via the object's own colour channel, so the orb can be
 // recoloured without needing a new asset.
 class PurpleOrb : public object_collab::CustomObject<EffectGameObject> {
+public:
+    using CustomObject::CustomObject;
+
 protected:
     bool init(const char* frame) override;
 
 public:
-    // See ReversePortal.hpp for why this create() override is required.
     static PurpleOrb* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto traits = object_collab::ObjectTraits();
-        auto* ret = new PurpleOrb(info, std::move(traits));
+        auto* ret = new PurpleOrb(info, object_collab::ObjectTraits::builder().build());
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -34,11 +35,15 @@ public:
         return nullptr;
     }
 
-    explicit PurpleOrb(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
-        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
-
     static void registerObject(geode::Mod* mod);
 
+    // Kept on the hand-rolled PlayerObject::update rect-check in main.cpp
+    // (not switched to the confirmed collidedByPlayer() hook like
+    // ReversePortal/CustomSpeedPortal) because orbs specifically need
+    // "reset the moment you leave" -- collidedByPlayer only fires while
+    // touching, with no confirmed "just left" callback, so a manual
+    // per-frame check is the safer way to get that leave-to-reset behavior
+    // right rather than risk losing it on an unconfirmed assumption.
     // Called every frame the player overlaps this orb. Only actually fires
     // the boost if the jump button is currently held, same as vanilla orbs
     // -- otherwise the player just passes through it doing nothing, letting

@@ -34,54 +34,52 @@ design.
 ## v1.2 changelog
 
 - **The include is fixed for real.** Header is
-  `smjs.object-collab/include/object_collab.hpp` (underscore, nested under
-  `include/`).
-- **Your two build logs since gave us the FULL real contents of
-  `ObjectInfo.hpp`, `ObjectTraits.hpp`, `EditorPopupConfig.hpp`,
-  `DetailsBuilder.hpp`, and `Property.hpp`.** That resolved several things
-  with certainty instead of guessing:
-  - **The real bug wasn't just a wrong enum — `create()` itself couldn't
-    have worked as written.** Static factory methods aren't virtual in
-    C++, so the inherited `EffectGameObject::create(frame)` would have
-    allocated a plain `EffectGameObject`, never our subclass — confirmed by
-    the compiler ("cannot initialize `CustomObjectInterface*` with
-    `EffectGameObject*`"). Every object now declares its own `create()`
-    (the standard cocos2d-x factory pattern, same shape as the `CREATE_FUNC`
-    macro) which hides the inherited one and actually allocates the right
-    type.
-  - `.construction(...)` needs a real `ObjectConstruction`
-    (`variant<QuickObject, ComplexObject>`), not a raw lambda — fixed by
-    wrapping every factory in `ComplexObject::builder().factory(...).build()`.
-  - `EditorTab` and `EditorButtonColor`'s real members are now confirmed:
-    `EditorTab` has no dedicated Portals/Orbs entry (real list: None,
-    Solids, TransparentSolids, Slopes, Hazards, ThreeDimensionals,
-    **PlayerModifiers**, Animated, Pixels, Collectables, Particles,
-    Decorations, Saws, Triggers) — `PlayerModifiers` is the closest
-    conceptual fit and is what all five objects use now.
-    `EditorButtonColor`'s real values are Green/Aqua/Pink/LightGray/
-    DarkGray/Red — colors reassigned across all five objects accordingly.
-  - The custom speed portal's popup is properly restored using the
-    confirmed real API: `editor_popup::NumericMenu` for the number field,
-    wrapped in `PopupConfig`, using the real `applyValueToSelected`/
-    `getCommonValueOrDefault` free functions object-collab provides
-    specifically for this member-pointer pattern.
-  - `GameObject::triggerObject`'s real signature is confirmed
-    (`(GJBaseGameLayer*, int uniqueID, gd::vector<int> const*)`) — fixed
-    the Reverse trigger call. `m_notActive` isn't a real member — removed.
-- **Still genuinely unresolved:** `ObjectTraits` is a real class (confirmed,
-  full method list known — `isSpeedObject`, `defaultZLayer`, etc.) but
-  `ObjectInfo::Builder`'s confirmed method list (`id`/`sprite`/
-  `construction`/`editorTab`/`editorButtonColor`/`editObject`/
-  `editSpecial`/`build`) has no method to attach one. Where it actually
-  plugs in is presumably `CustomObject.hpp`, which hasn't been dumped yet.
-  Removed rather than guess a where-does-this-go 4th time — our own
-  hand-rolled touch detection in `main.cpp` doesn't depend on it either
-  way, so this only matters for things like `isSpeedObject`'s native
-  integration, not for basic functionality.
-  `CMakeLists.txt`'s diagnostic now targets `CustomObject.hpp`,
-  `ObjectAPI.hpp`, `ObjectIDSwap.hpp`, `CustomLevelData.hpp`, and
-  `object_collab.hpp` next — paste that dump back if you want traits wired
-  up properly, though the mod should compile and run without it.
+  `smjs.object-collab/include/object_collab.hpp`.
+- **The full `CustomObject.hpp`, `ObjectAPI.hpp`, `ObjectIDSwap.hpp`,
+  `CustomLevelData.hpp`, and `object_collab.hpp` dumps revealed the real
+  construction pattern was different from every earlier draft**, and fixed
+  two more real bugs:
+  - `CustomObject<T>`'s actual constructor takes `(ObjectInfo*,
+    ObjectTraits&&)` — there's no default constructor, so `new
+    ReversePortal()` (etc.) couldn't compile at all ("implicitly-deleted
+    default constructor"). Every object now inherits that constructor via
+    `using CustomObject::CustomObject;` and `create()` takes the
+    `ObjectInfo*` the factory callback already receives, building
+    `ObjectTraits` itself at that point — which also answers the earlier
+    open question of *where* `ObjectTraits` actually attaches: at
+    construction, not through `ObjectInfo::Builder` at all.
+  - `ObjectInfo`'s copy constructor is explicitly deleted, but
+    `ObjectAPI::registerObject` takes it by value — every `registerObject`
+    now passes `std::move(info)` instead of `info`.
+  - `applyValueToSelected`/`getCommonValueOrDefault` live in
+    `object_collab::editor_popup`, not bare `object_collab` — qualified
+    both calls in `CustomSpeedPortal.cpp`.
+- **Found a real, confirmed collision hook: `CustomObjectInterface::
+  collidedByPlayer(PlayerObject*)`**, called every frame the player is in
+  contact with a Solid-type custom object — a proper framework hook, not
+  something to hand-roll. `ReversePortal` and `CustomSpeedPortal` now use
+  it directly instead of being checked in the `PlayerObject::update` loop.
+  `PausePortal`/`PurpleOrb`/`GravityShiftOrb` deliberately stay on the
+  hand-rolled rect-check in `main.cpp`, though — they specifically need to
+  know the moment contact *ends* (to release the X-hold, or let an orb
+  re-arm), and there's no confirmed "just left" callback on
+  `CustomObjectInterface`, so keeping the manual check there is the safer
+  call until that's confirmed one way or another.
+- `ObjectTraits::isSpeedObject(true)` is now properly set on the speed
+  portal using the confirmed real builder method (the header notes it's
+  currently a no-op upstream due to inlining, but it's harmless and
+  forward-compatible to set).
+- Real `EditorTab`/`EditorButtonColor` values, `ComplexObject`-wrapped
+  construction, the restored `NumericMenu` speed popup, and the
+  `triggerObject`/`m_notActive` fixes from the previous round are all
+  unchanged and still in place.
+- **Still genuinely unresolved:** the Reverse trigger's real object ID
+  (`ReversePortal.cpp`), and `teleportToVertical`/`toggleGravityEffect`'s
+  real names (`GravityShiftOrb.cpp`) — those are ordinary GD binding
+  lookups now, unrelated to object-collab, so the `geode-deps` diagnostic
+  won't help with them; they'd need checking against the Geode bindings
+  browser or a working build to confirm.
+
 
 
 

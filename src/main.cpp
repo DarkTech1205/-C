@@ -8,11 +8,15 @@
 
 using namespace geode::prelude;
 
-// BigPortal hooks PlayerObject::update itself rather than relying on
-// object-collab to call something automatically -- portal-type effects
-// (gravity/mirror/mini/speed) are checked directly against the player's
-// hitbox every frame in the base game, and custom objects need to do the
-// same thing by hand. This mirrors that pattern for both of our objects.
+// object-collab's CustomObjectInterface has a real, confirmed
+// collidedByPlayer(PlayerObject*) hook -- called every frame the player is
+// in contact with a Solid-type custom object. ReversePortal and
+// CustomSpeedPortal use that directly now instead of being checked here
+// (see their .cpp files). PausePortal/PurpleOrb/GravityShiftOrb stay on
+// this hand-rolled rect-check because they specifically need "the moment
+// contact ENDS" (to release the X-hold, or let an orb re-arm), and no
+// confirmed "just left" callback exists on CustomObjectInterface -- keeping
+// them here is the safer choice until that's confirmed one way or another.
 class $modify(MyPlayerObject, PlayerObject) {
     void update(float dt) {
         PlayerObject::update(dt);
@@ -21,28 +25,14 @@ class $modify(MyPlayerObject, PlayerObject) {
         if (!layer) return;
 
         auto playerRect = this->getObjectRect();
-        bool isP1 = (this == layer->m_player1);
 
         // NOTE: iterating every object in the level every frame (as written
         // below) will not perform well on large levels. Swap m_objects for
         // whichever "objects currently active in this section" list/array
-        // GJBaseGameLayer already maintains for collision checks (the same
-        // one vanilla portal detection uses) once you've confirmed its real
-        // name against the Geode bindings -- this is the one piece of this
-        // file worth optimizing before shipping.
+        // GJBaseGameLayer already maintains for collision checks once
+        // you've confirmed its real name -- worth optimizing before shipping.
         for (auto* obj : CCArrayExt<GameObject*>(layer->m_objects)) {
-            if (auto* reversePortal = typeinfo_cast<ReversePortal*>(obj)) {
-                if (playerRect.intersectsRect(reversePortal->getObjectRect())) {
-                    reversePortal->onPlayerTouch(layer, this);
-                }
-            } else if (auto* speedPortal = typeinfo_cast<CustomSpeedPortal*>(obj)) {
-                if (playerRect.intersectsRect(speedPortal->getObjectRect())) {
-                    speedPortal->onPlayerTouch(layer, this, isP1);
-                }
-            } else if (auto* pausePortal = typeinfo_cast<PausePortal*>(obj)) {
-                // Continuous, not single-activate: hold while overlapping,
-                // release the moment contact ends so it doesn't leave the
-                // player stuck to a stale X after they've left the zone.
+            if (auto* pausePortal = typeinfo_cast<PausePortal*>(obj)) {
                 bool overlapping = playerRect.intersectsRect(pausePortal->getObjectRect());
                 if (overlapping) {
                     pausePortal->holdPlayer(this);

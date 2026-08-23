@@ -55,21 +55,19 @@ void CustomSpeedPortal::registerObject(Mod* mod) {
             .build())
         .build();
 
-    // NOTE: ObjectTraits (isSpeedObject etc.) has no confirmed attachment
-    // point on ObjectInfo::Builder -- see ReversePortal.cpp's note. Removed
-    // rather than another wrong guess; our own touch detection in main.cpp
-    // doesn't need it.
-
-    ObjectAPI::registerObject(info, mod);
+    ObjectAPI::registerObject(std::move(info), mod);
 }
 
-void CustomSpeedPortal::onPlayerTouch(GJBaseGameLayer* layer, PlayerObject* player, bool isPlayer1) {
+void CustomSpeedPortal::collidedByPlayer(PlayerObject* player) {
     if (m_alreadyActivated) return;
     m_alreadyActivated = true;
 
     // Singleton bookkeeping -- see the class comment in CustomSpeedPortal.hpp
     // for why this isn't a real per-level Geode field.
     SpeedPortalManager::instance().registerSpeed(m_speedValue);
+
+    auto* layer = GJBaseGameLayer::get();
+    bool isPlayer1 = layer && layer->m_player1 == player;
 
     float timeMod = SpeedPortalManager::speedToTimeMod(m_speedValue);
     player->updateTimeMod(timeMod, isPlayer1);

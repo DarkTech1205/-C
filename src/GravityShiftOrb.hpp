@@ -19,14 +19,15 @@ using namespace geode::prelude;
 // and know what range/speed feels right, wiring up a popup for those two
 // numbers is a small follow-up, not a redesign.
 class GravityShiftOrb : public object_collab::CustomObject<EffectGameObject> {
+public:
+    using CustomObject::CustomObject;
+
 protected:
     bool init(const char* frame) override;
 
 public:
-    // See ReversePortal.hpp for why this create() override is required.
     static GravityShiftOrb* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto traits = object_collab::ObjectTraits();
-        auto* ret = new GravityShiftOrb(info, std::move(traits));
+        auto* ret = new GravityShiftOrb(info, object_collab::ObjectTraits::builder().build());
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -34,9 +35,6 @@ public:
         delete ret;
         return nullptr;
     }
-
-    explicit GravityShiftOrb(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
-        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
 
     static void registerObject(geode::Mod* mod);
 

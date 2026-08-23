@@ -12,14 +12,15 @@ using namespace geode::prelude;
 // they leave its bounds, normal X movement resumes on its own -- no matching
 // "unpause" object needed.
 class PausePortal : public object_collab::CustomObject<EffectGameObject> {
+public:
+    using CustomObject::CustomObject;
+
 protected:
     bool init(const char* frame) override;
 
 public:
-    // See ReversePortal.hpp for why this create() override is required.
     static PausePortal* create(object_collab::ObjectInfo* info, const char* frame) {
-        auto traits = object_collab::ObjectTraits();
-        auto* ret = new PausePortal(info, std::move(traits));
+        auto* ret = new PausePortal(info, object_collab::ObjectTraits::builder().build());
         if (ret->init(frame)) {
             ret->autorelease();
             return ret;
@@ -27,9 +28,6 @@ public:
         delete ret;
         return nullptr;
     }
-
-    explicit PausePortal(object_collab::ObjectInfo* info, object_collab::ObjectTraits&& traits)
-        : object_collab::CustomObject<EffectGameObject>(info, std::move(traits)) {}
 
     static void registerObject(geode::Mod* mod);
 
