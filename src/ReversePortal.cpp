@@ -35,7 +35,7 @@ void ReversePortal::registerObject(Mod* mod) {
         // that don't need their own class.
         .construction(ComplexObject::builder()
             .factory([](ObjectInfo* info) -> CustomObjectInterface* {
-                return ReversePortal::create("reverse-portal-icon.png"_spr);
+                return ReversePortal::create(info, "reverse-portal-icon.png"_spr);
             })
             .build())
         .build();
