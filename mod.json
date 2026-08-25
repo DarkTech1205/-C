@@ -1,0 +1,34 @@
+{
+    "geode": "5.8.2",
+    "gd": {
+        "win": "2.2081",
+        "android": "2.2081",
+        "mac": "2.2081",
+        "ios": "2.2081"
+    },
+    "id": "yourname.reverse-and-speed-portals",
+    "name": "Reverse & Custom Speed Portals",
+    "version": "v1.2.0",
+    "developer": "yourname",
+    "description": "Adds a Reverse Portal gamemode and fully customisable speed portals (set any hue + any speed value in the editor).",
+    "dependencies": {
+        "geode.node-ids": ">=v1.23.3",
+        "smjs.object-collab": {
+            "version": "0.5.5-beta.3",
+            "required": true
+        }
+    },
+    "resources": {
+        "spritesheets": {
+            "PortalsSheet": [
+                "resources/*.png"
+            ]
+        }
+    },
+    "tags": [
+        "content",
+        "editor",
+        "gameplay",
+        "offline"
+    ]
+}
