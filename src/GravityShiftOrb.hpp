@@ -28,7 +28,7 @@ protected:
 public:
     static GravityShiftOrb* create(object_collab::ObjectInfo* info, const char* frame) {
         auto* ret = new GravityShiftOrb(info, object_collab::ObjectTraits::builder()
-            .gameObjectType(GameObjectType::Modifier) // NOT Solid -- Solid is a physical block
+            .gameObjectType(GameObjectType::Special) // 3rd attempt at this value -- see the detailed reasoning in ReversePortal.hpp
             // Confirmed from CustomObject.hpp's own customSetup() source: m_isInvisible
             // = !editorEnabled && isTriggerObject() && !isSpeedObject() -- isSpeedObject(true)
             // is what keeps a Modifier-type object VISIBLE during actual gameplay,

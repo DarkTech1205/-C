@@ -36,11 +36,16 @@ protected:
 public:
     static CustomSpeedPortal* create(object_collab::ObjectInfo* info, const char* frame) {
         auto* ret = new CustomSpeedPortal(info, object_collab::ObjectTraits::builder()
-            // The doc comment on isSpeedObject explicitly says it only works
-            // when the object type is Modifier -- leaving gameObjectType on
-            // its Solid default (as earlier drafts did) is almost certainly
-            // why isSpeedObject was silently doing nothing.
-            .gameObjectType(GameObjectType::Modifier)
+            // isSpeedObject's real native engine integration only works
+            // with GameObjectType::Modifier per its doc comment -- but that
+            // native integration is separately noted as "currently
+            // unimplemented due to too much inlining" anyway, and we don't
+            // rely on it: our own updateTimeMod() call in collidedByPlayer()
+            // does the actual speed change by hand. isSpeedObject(true) is
+            // kept here purely for the confirmed visibility formula
+            // (m_isInvisible depends on it, not on GameObjectType), so it's
+            // safe to pair with Special instead of Modifier.
+            .gameObjectType(GameObjectType::Special) // 3rd attempt at this value -- see the detailed reasoning in ReversePortal.hpp
             .isSpeedObject(true)
             .build());
         if (ret->init(frame)) {

@@ -33,6 +33,32 @@ design.
 
 ## v1.2 changelog
 
+- **Third attempt at `GameObjectType`, and being upfront this is still a
+  hypothesis, not a confirmation.** `Solid` physically blocked the player.
+  `Modifier` should have fixed visibility per the confirmed
+  `m_isInvisible` formula (and `isSpeedObject(true)` is still set for
+  that reason) — but everything reportedly stayed inert/trigger-like in
+  actual play. Best explanation: `Modifier` is GD's trigger category, and
+  triggers are probably detected by position/zone crossing, not real
+  hitbox collision — meaning `collidedByPlayer()` may simply never fire
+  for `Modifier`-type objects regardless of visibility. Switched all five
+  objects to `GameObjectType::Special` — a genuine non-solid, non-trigger,
+  non-hardcoded-portal-swap category, the safest remaining option that
+  isn't tied to a specific vanilla gamemode-swap behavior.
+  I looked for a real published object-collab example mod's source to
+  confirm this properly instead of reasoning from doc comments alone, and
+  came up empty — couldn't find one with visible source. If `Special`
+  still doesn't get real touch detection, the only category left that's
+  confirmed to get genuine per-frame collision in vanilla GD is one of the
+  actual portal/orb/pad types (`TeleportPortal`, `RegularSizePortal`,
+  etc.) — and picking one of those carries a real, known risk: each is
+  wired to its own specific hardcoded vanilla behavior (e.g. `ShipPortal`
+  would try to force a cube→ship swap), which could fight our own custom
+  logic rather than just provide collision detection. Flagging that now
+  so it's not a surprise if `Special` also comes up empty and that's the
+  next thing to try.
+
+
 - **The `0.5.5-beta.3` pin didn't actually take last round.** Confirmed
   from Geode's own dependency docs: the version field only accepts
   `>=version`, `=version`, or `<=version` — a bare version string with no

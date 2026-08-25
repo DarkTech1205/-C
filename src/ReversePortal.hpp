@@ -32,13 +32,23 @@ public:
     //    builds the ObjectTraits itself.
     static ReversePortal* create(object_collab::ObjectInfo* info, const char* frame) {
         auto* ret = new ReversePortal(info, object_collab::ObjectTraits::builder()
-            .gameObjectType(GameObjectType::Modifier) // NOT Solid -- Solid is a physical block
-            // Confirmed from CustomObject.hpp's own customSetup() source: m_isInvisible
-            // = !editorEnabled && isTriggerObject() && !isSpeedObject() -- isSpeedObject(true)
-            // is what keeps a Modifier-type object VISIBLE during actual gameplay,
-            // not GameObjectType. CustomSpeedPortal already had this (why it was
-            // the one object you didn't report as invisible); the others didn't.
-            .isSpeedObject(true)
+            // Third attempt at this value, and worth being honest about the
+            // history: Solid (default) physically blocked the player like a
+            // wall. Modifier fixed that, and per source m_isInvisible should
+            // have gone false once isSpeedObject(true) was set below -- but
+            // it's still reportedly invisible/inert in-game, which suggests
+            // Modifier (GD's trigger category) likely never gets real
+            // per-frame collidedByPlayer() checks at all, regardless of
+            // visibility -- triggers are probably detected by
+            // position/zone, not hitbox collision. Special is a genuine
+            // non-solid, non-trigger, non-hardcoded-portal-swap category --
+            // the safest remaining guess. If this still doesn't work, the
+            // last real option is one of the confirmed vanilla portal/orb
+            // types (TeleportPortal, RegularSizePortal, etc.), accepting
+            // the risk that they may carry their own hardcoded vanilla
+            // side effects alongside our custom logic.
+            .gameObjectType(GameObjectType::Special)
+            .isSpeedObject(true) // keeps it visible per the confirmed m_isInvisible formula -- unrelated to the type question above
             .build());
         if (ret->init(frame)) {
             ret->autorelease();

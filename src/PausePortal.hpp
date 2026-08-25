@@ -26,7 +26,7 @@ protected:
 public:
     static PausePortal* create(object_collab::ObjectInfo* info, const char* frame) {
         auto* ret = new PausePortal(info, object_collab::ObjectTraits::builder()
-            .gameObjectType(GameObjectType::Modifier) // NOT Solid -- Solid is a physical block
+            .gameObjectType(GameObjectType::Special) // 3rd attempt at this value -- see the detailed reasoning in ReversePortal.hpp
             .isSpeedObject(true) // required both for real speed behavior AND to stay visible -- see ReversePortal.hpp's note
             .build());
         if (ret->init(frame)) {
